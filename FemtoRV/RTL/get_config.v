@@ -48,6 +48,9 @@ initial begin
 `ifdef ICE_SUGAR_NANO
    $write(" -DICE_SUGAR_NANO=1");
 `endif
+`ifdef NRV_IO_MULTIPLIER
+   $write(" -DMULTIPLIER=1");
+`endif
    $write("\n");
    
 end 

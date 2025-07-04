@@ -13,6 +13,12 @@ localparam IO_BUTTONS_bit               = 9;  // R  buttons state
 localparam IO_FGA_CNTL_bit              = 10; // RW write: send command  read: get VSync/HSync/MemBusy/X/Y state
 localparam IO_FGA_DAT_bit               = 11; // W  write: write pixel data
 
+
+localparam IO_MULT_A_bit            = 12;
+localparam IO_MULT_B_bit            = 13;
+localparam IO_MULT_RESULT_bit       = 14;
+localparam IO_MULT_RESULT_HI_bit    = 15; // mitad alta del resultado
+
 // The three constant hardware config registers, using the three last bits of IO address space
 localparam IO_HW_CONFIG_RAM_bit     = 17;  // R  total quantity of RAM, in bytes
 localparam IO_HW_CONFIG_DEVICES_bit = 18;  // R  configured devices

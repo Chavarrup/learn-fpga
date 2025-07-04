@@ -3,58 +3,60 @@
 `ifdef BENCH_VERILATOR
 `define BENCH
 `endif
+// Definición de macros necesarias para la compilación
+`define NRV_ARCH "rv32i"       // Definir la arquitectura (por ejemplo, RV32I o RV64I)
+`define NRV_OPTIMIZE "-Os"     // Nivel de optimización, por ejemplo O2
+`define NRV_ABI "ilp32"       // ABI, como ilp32 o lp64
 
-`ifdef ULX3S
-`include "CONFIGS/ulx3s_config.v"
-`endif
 
-`ifdef ICE_STICK
-`include "CONFIGS/icestick_config.v"
-`endif
+// Comentamos las definiciones específicas de placas, ya que no las estamos usando
+//`ifdef ULX3S
+//`include "CONFIGS/ulx3s_config.v"
+//`endif
 
-`ifdef ICE_BREAKER
-`include "CONFIGS/icebreaker_config.v"
-`endif
+//`ifdef ICE_STICK
+//`include "CONFIGS/icestick_config.v"
+//`endif
 
-`ifdef ECP5_EVN
-`include "CONFIGS/ecp5evn_config.v"
-`endif
+//`ifdef ICE_BREAKER
+//`include "CONFIGS/icebreaker_config.v"
+//`endif
 
-`ifdef ARTY
-`include "CONFIGS/arty_config.v"
-`endif
+//`ifdef ECP5_EVN
+//`include "CONFIGS/ecp5evn_config.v"
+//`endif
 
-`ifdef ICE_SUGAR_NANO
-`include "CONFIGS/icesugarnano_config.v"
-`endif
+//`ifdef ARTY
+//`include "CONFIGS/arty_config.v"
+//`endif
 
-`ifdef CMODA7
-`include "CONFIGS/cmod_a7_config.v"
-`endif
+//`ifdef ICE_SUGAR_NANO
+//`include "CONFIGS/icesugarnano_config.v"
+//`endif
 
-`ifdef BENCH_VERILATOR
-`include "CONFIGS/bench_config.v"
-`endif
+//`ifdef CMODA7
+//`include "CONFIGS/cmod_a7_config.v"
+//`endif
 
+// Usamos la configuración genérica si no se define ninguna de las anteriores
 `ifndef NRV_CONFIGURED
 `include "CONFIGS/generic_config.v"
 `endif
 
 /******************************************************************************/
+// Configuración para el reset
 
-/* 
- * Uncomment if the RESET button is wired and active low:
- * (wire a push button and a pullup resistor to 
- * pin 47 or change in nanorv.pcf). 
- */
-`ifdef ICE_STICK
+// Deshabilitamos la configuración de reset para placas específicas
+// Si no tienes un botón de reset activo, no defines NRV_NEGATIVE_RESET
+//`ifdef ICE_STICK
 //`define NRV_NEGATIVE_RESET 
-`endif
+//`endif
 
-`ifdef FOMU
-`define NRV_NEGATIVE_RESET
-`endif
+//`ifdef FOMU
+//`define NRV_NEGATIVE_RESET
+//`endif
 
+// Definimos los módulos que vamos a usar. Aquí indicamos los módulos que pueden ser necesarios
 `ifdef NRV_IO_SPI_FLASH
 `define NRV_SPI_FLASH
 `endif
@@ -63,57 +65,23 @@
 `define NRV_SPI_FLASH
 `endif
 
-/*
- * On the ECP5 evaluation board, there is already a wired button, active low,
- * wired to the "P4" ball of the ECP5 (see ecp5_evn.lpf)
- */ 
+// Habilitamos el multiplicador como dispositivo
+
+`define NRV_IO_MULTIPLIER
+
+// En caso de que se use alguna de las placas ECP5, ULX3S o similares
 `ifdef ECP5_EVN
 `define NRV_NEGATIVE_RESET
 `endif
 
-// Toggle FPGA defines (ICE40, ECP5) in function of board defines (ICE_STICK, ECP5_EVN)
-// Board defines are set in Makefile.
-
-`ifdef ICE_STICK
- `define ICE40
-`endif
-
-`ifdef ICE_BREAKER
- `define ICE40
-`endif
-
-`ifdef ICE_FEATHER
- `define ICE40
-`endif
-
-`ifdef ICE_SUGAR
- `define ICE40
-`endif
-
-`ifdef ICE_SUGAR_NANO
- `define ICE40
- `define PASSTHROUGH_PLL
-`endif
-
-`ifdef FOMU
- `define ICE40
-`endif
-
-`ifdef ECP5_EVN
- `define ECP5 
-`endif
-
-`ifdef ULX3S
- `define ECP5 
-`endif
-
 /******************************************************************************************************************/
-/* Processor */
+// Definición de procesadores
 
 `define NRV_IS_IO_ADDR(addr) |addr[23:22] // Asserted if address is in IO space (then it needs additional wait states)
 
 `include "PROCESSOR/utils.v"
 
+// Definimos el procesador en función de la configuración
 `ifdef NRV_FEMTORV32_QUARK
  `include "PROCESSOR/femtorv32_quark.v" // Minimalistic version of the processor for IceStick (RV32I)
 `endif

@@ -1,28 +1,48 @@
 #include "VfemtoRV32_bench.h"
 #include "verilated.h"
-#include "FPU_funcs.h"
-#include "SSD1351.h"
-#include <memory>
+
+#include <cstdio>
+#include <cstdint>
+#include <inttypes.h>
 #include <fenv.h>
 #include <xmmintrin.h>
 
 int main(int argc, char** argv, char** env) {
+    // Configuración de coma flotante
+    fesetround(FE_TOWARDZERO);
+    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 
-   // simplest rounding = ignore LSBs
-   fesetround(FE_TOWARDZERO);
+    Verilated::commandArgs(argc, argv);
 
-   // for now, flush denormalized result to zero.   
-   _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON); 
-   
-   VfemtoRV32_bench top;
-   SSD1351 oled(
-      top.oled_DIN, top.oled_CLK, top.oled_CS, top.oled_DC, top.oled_RST
-   );
-   top.pclk = 0;
-   while(!Verilated::gotFinish()) {
-      top.pclk = !top.pclk;
-      top.eval();
-      oled.eval();
-   }
-   return 0;
+    VfemtoRV32_bench top;      // Instancia del testbench
+    uint64_t main_time = 0;    // Contador de ciclos
+    const uint64_t TIMEOUT = 1000000; // 1 000 000 ciclos de timeout
+
+    bool shown     = false;    // Para imprimir una sola vez el resultado
+    bool prev_busy = false;    // Para detectar flanco de bajada en rbusy
+
+    // Inicializa el reloj pclk (el SoC genera 'clk' internamente vía PLL)
+    top.pclk = 0;
+
+    while (!Verilated::gotFinish() && main_time < TIMEOUT) {
+        // Toggle de reloj
+        top.pclk = !top.pclk;
+        top.eval();
+        ++main_time;
+
+        // Detectar fin de multiplicación (flanco 1→0 en rbusy)
+        if (!shown && prev_busy && !top.rbusy) {
+            uint64_t prod = top.result;
+            std::printf("Multiplicador: 7 x 9 = %" PRIu64 "\n", prod);
+            shown = true;
+        }
+        prev_busy = top.rbusy;
+    }
+
+    if (!shown) {
+        std::fprintf(stderr, "ERROR: rbusy nunca se desactivó (timeout tras %" PRIu64 " ciclos)\n", main_time);
+        return 1;
+    }
+
+    return 0;
 }
